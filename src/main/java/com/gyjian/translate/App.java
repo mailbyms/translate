@@ -21,9 +21,14 @@ public class App {
 	private static final String SECURITY_KEY = "";
 
 	public static void main(String[] args) {
-		String inFile = "r:\\a.srt";
-		String[] inNames = inFile.split("\\.");
-		String outFile = inNames[0] + ".cn." + inNames[1];
+		if (args.length != 1) {
+			System.out.println("Usage:java -jar translate.jar xxx.srt");
+			return;
+		}
+		String inFile = args[0]; //"/Users/jane/Downloads/a.srt";
+		System.out.println("input srt file:" + inFile);
+		
+		String outFile = inFile.replaceAll("\\.srt", "\\.baidu.srt");
 
 		FileOutputStream outSTr = null;
 		BufferedOutputStream Buff = null;
