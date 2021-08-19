@@ -1,5 +1,8 @@
 package com.gyjian.translate;
 
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+
 import java.io.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -14,11 +17,12 @@ import com.alibaba.fastjson.JSONObject;
 
 import com.baidu.translate.demo.TransApi;
 
+@SpringBootApplication
 public class App {
 	// 在平台申请的APP_ID 详见
 	// http://api.fanyi.baidu.com/api/trans/product/desktop?req=developer
-	private static final String APP_ID = "20180515000160090";
-	private static final String SECURITY_KEY = "kLvyAJ0f6gbOFDhv1hes";
+	private static final String APP_ID = "20190709000316278";
+	private static final String SECURITY_KEY = "XODK2pODq31WwXHujurS";
 
 	public static void main(String[] args) {
 		if (args.length != 1) {
