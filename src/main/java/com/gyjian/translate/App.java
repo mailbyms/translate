@@ -1,6 +1,5 @@
 package com.gyjian.translate;
 
-import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 import java.io.*;
@@ -103,6 +102,7 @@ public class App {
 							} catch (Exception e) {
 								// TODO Auto-generated catch block
 								e.printStackTrace();
+								break;
 							}
 							
 							lyric = "";			// 翻译完，复位到空串
@@ -119,8 +119,9 @@ public class App {
 					}
 				}
 
-				else
+				else {
 					break;
+				}
 			}
 
 			is.close();
