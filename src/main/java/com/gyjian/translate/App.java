@@ -1,6 +1,13 @@
 package com.gyjian.translate;
 
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
+import com.gyjian.translate.service.TransApiService;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.CommandLineRunner;
+import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 import java.io.*;
@@ -8,31 +15,29 @@ import java.nio.charset.StandardCharsets;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import com.alibaba.fastjson.JSONArray;
-import com.alibaba.fastjson.JSONObject;
-
-/**
- * Hello world!
- *
- */
-
-import com.baidu.translate.demo.TransApi;
-
 @Slf4j
 @SpringBootApplication
-public class App {
+public class App implements CommandLineRunner {
     // 在平台申请的APP_ID 详见
     // http://api.fanyi.baidu.com/api/trans/product/desktop?req=developer
     private static final String APP_ID = "20190709000316278";
     private static final String SECURITY_KEY = "XODK2pODq31WwXHujurS";
 
+    @Autowired
+    private TransApiService apiService;
+
     public static void main(String[] args) {
+        SpringApplication.run(App.class, args);
+    }
+
+    @Override
+    public void run(String... args) {
         if (args.length != 1) {
             log.info("Usage:java -jar translate.jar xxx.srt");
             //return;
         }
         String inFile = args[0];
-        //String inFile = "C:\\Users\\YOGA\\Downloads\\Mayor.of.Kingstown.S02E07.Drones.1080p.AMZN.WEB-DL.DDP5.1.H.264-NTb.srt";
+        //String inFile = "C:\\Users\\MIKE\\Downloads\\Poker.Face.2023.S01E01.Dead.Mans.Hand.REPACK.1080p.STAN.WEB-DL.DDP5.1.H.264-NTb.srt";
 
         log.info("input srt file:{}", inFile);
 
@@ -43,8 +48,8 @@ public class App {
         try (
                 InputStream is = new FileInputStream(inFile);
                 BufferedReader reader = new BufferedReader(new InputStreamReader(is));
-                FileOutputStream outSTr = new FileOutputStream(outFile);
-                BufferedOutputStream Buff = new BufferedOutputStream(outSTr)
+                FileOutputStream fileOutputStream = new FileOutputStream(outFile);
+                BufferedOutputStream bufferedOutputStream = new BufferedOutputStream(fileOutputStream)
         ) {
             String reg = "^([0-9])*:([0-9])*"; // 用来匹配时间轴格式，如 00:00:14,000 --> 00:00:17,760
             Pattern pattern = Pattern.compile(reg);
@@ -54,6 +59,7 @@ public class App {
 
             String lyric = "";
             String str;
+            apiService.init(APP_ID, SECURITY_KEY);
             while (true) {
                 str = reader.readLine();
                 if (str != null) {
@@ -70,12 +76,10 @@ public class App {
                         // 如果有积聚英文原句，刚翻译并写到文件里
                         if (lyric.length() > 0) {
                             try {
-                                TransApi api = new TransApi(APP_ID, SECURITY_KEY);
-
                                 String query = lyric;
-                                query = (api.getTransResult(query, "en", "zh"));
+                                query = apiService.getTransResult(query, "en", "zh");
 
-                                JSONObject jo = JSONObject.parseObject(query);
+                                JSONObject jo = JSON.parseObject(query);
                                 JSONArray jArray = jo.getJSONArray("trans_result");
                                 if (jArray == null) {
                                     log.warn("翻译失败，接口结果为：{}", query);
@@ -83,6 +87,7 @@ public class App {
                                     if (errno == 54003) {
 
                                     }
+                                    continue;
                                 }
 
                                 JSONObject jo2 = (JSONObject) jArray.get(0);
@@ -94,12 +99,12 @@ public class App {
                                 string = new String(utf8, StandardCharsets.UTF_8);
 
                                 log.info(string);
-                                Buff.write(utf8);
-                                Buff.write('\n');
-                                Buff.write(lyric.getBytes());
-                                Buff.write('\n');
+                                bufferedOutputStream.write(utf8);
+                                bufferedOutputStream.write('\n');
+                                bufferedOutputStream.write(lyric.getBytes());
+                                bufferedOutputStream.write('\n');
 
-                                Buff.flush();
+                                bufferedOutputStream.flush();
 
                                 Thread.sleep(20);
 
@@ -113,9 +118,9 @@ public class App {
                         }
 
                         // 把原文写到文件
-                        Buff.write(str.getBytes());
-                        Buff.write('\n');
-                        Buff.flush();
+                        bufferedOutputStream.write(str.getBytes());
+                        bufferedOutputStream.write('\n');
+                        bufferedOutputStream.flush();
                     } else {                        // 读到一句英文句子，先存起来
                         lyric += " " + str;
                         lyric = lyric.trim();

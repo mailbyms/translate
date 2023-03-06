@@ -1,23 +1,33 @@
-package com.baidu.translate.demo;
+package com.gyjian.translate.service;
+
+import org.apache.commons.codec.digest.DigestUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
 
 import java.io.UnsupportedEncodingException;
 import java.util.HashMap;
 import java.util.Map;
 
-public class TransApi {
-    private static final String TRANS_API_HOST = "http://api.fanyi.baidu.com/api/trans/vip/translate";
+@Service
+public class TransApiService {
+    private static final String TRANS_API_HOST = "https://fanyi-api.baidu.com/api/trans/vip/translate?q={q}&from={from}&to={to}&appid={appid}&salt={salt}&sign={sign}";
+
+    @Autowired
+    RestTemplate restTemplate;
 
     private String appid;
     private String securityKey;
 
-    public TransApi(String appid, String securityKey) {
+    public void init(String appid, String securityKey) {
         this.appid = appid;
         this.securityKey = securityKey;
     }
 
     public String getTransResult(String query, String from, String to) throws UnsupportedEncodingException {
         Map<String, String> params = buildParams(query, from, to);
-        return HttpGet.get(TRANS_API_HOST, params);
+
+        return restTemplate.getForObject(TRANS_API_HOST, String.class, params);
     }
 
     private Map<String, String> buildParams(String query, String from, String to) throws UnsupportedEncodingException {
@@ -34,7 +44,7 @@ public class TransApi {
 
         // 签名
         String src = appid + query + salt + securityKey; // 加密前的原文
-        params.put("sign", MD5.md5(src));
+        params.put("sign", DigestUtils.md5Hex(src));
 
         return params;
     }
