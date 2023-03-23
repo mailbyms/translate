@@ -41,9 +41,9 @@ public class RestTemplateConfig {
                 new HttpComponentsClientHttpRequestFactory();
 
         requestFactory.setHttpClient(httpClient);
- //       requestFactory.setConnectionRequestTimeout(1000);
- //       requestFactory.setConnectTimeout(2000);
-//        requestFactory.setReadTimeout(4800);
+        requestFactory.setConnectionRequestTimeout(1000);   // 从连接池中获取连接的超时时间
+        requestFactory.setConnectTimeout(5000); //与服务器连接超时时间
+        requestFactory.setReadTimeout(60000); //调用一个HTTP请求后，收到服务器响应的超时时间
 
         RestTemplate restTemplate = new RestTemplate(requestFactory);
 

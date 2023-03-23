@@ -1,9 +1,6 @@
 package com.gyjian.translate;
 
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONArray;
-import com.alibaba.fastjson.JSONObject;
-import com.gyjian.translate.service.TransApiService;
+import com.gyjian.translate.service.AzureTransApiService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
@@ -18,13 +15,12 @@ import java.util.regex.Pattern;
 @Slf4j
 @SpringBootApplication
 public class App implements CommandLineRunner {
-    // 在平台申请的APP_ID 详见
-    // http://api.fanyi.baidu.com/api/trans/product/desktop?req=developer
-    private static final String APP_ID = "20190709000316278";
-    private static final String SECURITY_KEY = "XODK2pODq31WwXHujurS";
+    // 在平台申请的APP_ID 详见 Azure 控制台，服务下的"密钥和终结点"，密钥1 和 位置/区域
+    private static final String SUBSCRIPTION_REGION = "eastasia";
+    private static final String SUBSCRIPTION_KEY = "e1346fac1a364dfe891c3575fabcfe36";
 
     @Autowired
-    private TransApiService apiService;
+    private AzureTransApiService apiService;
 
     public static void main(String[] args) {
         SpringApplication.run(App.class, args);
@@ -36,15 +32,15 @@ public class App implements CommandLineRunner {
             log.info("Usage:java -jar translate.jar xxx.srt");
             //return;
         }
-        String inFile = args[0];
-        //String inFile = "C:\\Users\\MIKE\\Downloads\\Poker.Face.2023.S01E01.Dead.Mans.Hand.REPACK.1080p.STAN.WEB-DL.DDP5.1.H.264-NTb.srt";
+        //String inFile = args[0];
+        String inFile = "D:\\Downloads\\Poker.Face.2023.S01E01.Dead.Mans.Hand.REPACK.1080p.STAN.WEB-DL.DDP5.1.H.264-NTb.srt";
 
         log.info("input srt file:{}", inFile);
 
         int dotIndex = inFile.lastIndexOf('.'); // 获取最后一个点的位置
         String nameWithoutExt = inFile.substring(0, dotIndex); // 获取没有后缀的文件名
 
-        String outFile = nameWithoutExt + ".baidu.srt";
+        String outFile = nameWithoutExt + ".azure.srt";
         try (
                 InputStream is = new FileInputStream(inFile);
                 BufferedReader reader = new BufferedReader(new InputStreamReader(is));
@@ -59,7 +55,7 @@ public class App implements CommandLineRunner {
 
             String lyric = "";
             String str;
-            apiService.init(APP_ID, SECURITY_KEY);
+            apiService.init(SUBSCRIPTION_REGION, SUBSCRIPTION_KEY);
             while (true) {
                 str = reader.readLine();
                 if (str != null) {
@@ -77,36 +73,17 @@ public class App implements CommandLineRunner {
                         if (lyric.length() > 0) {
                             try {
                                 String query = lyric;
-                                query = apiService.getTransResult(query, "en", "zh");
+                                String result = apiService.getTransResult(query);
+                                log.info(result);
 
-                                JSONObject jo = JSON.parseObject(query);
-                                JSONArray jArray = jo.getJSONArray("trans_result");
-                                if (jArray == null) {
-                                    log.warn("翻译失败，接口结果为：{}", query);
-                                    int errno = jo.getIntValue("error_code");
-                                    if (errno == 54003) {
-
-                                    }
-                                    continue;
-                                }
-
-                                JSONObject jo2 = (JSONObject) jArray.get(0);
-
-                                // Convert from Unicode to UTF-8
-                                String string = jo2.getString("dst");
-                                byte[] utf8 = string.getBytes(StandardCharsets.UTF_8);
-                                // Convert from UTF-8 to Unicode
-                                string = new String(utf8, StandardCharsets.UTF_8);
-
-                                log.info(string);
-                                bufferedOutputStream.write(utf8);
+                                bufferedOutputStream.write(result.getBytes(StandardCharsets.UTF_8));
                                 bufferedOutputStream.write('\n');
                                 bufferedOutputStream.write(lyric.getBytes());
                                 bufferedOutputStream.write('\n');
 
                                 bufferedOutputStream.flush();
 
-                                Thread.sleep(20);
+                                //Thread.sleep(20);
 
                             } catch (Exception e) {
                                 e.printStackTrace();
