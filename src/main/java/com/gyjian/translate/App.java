@@ -1,8 +1,9 @@
 package com.gyjian.translate;
 
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONArray;
-import com.alibaba.fastjson.JSONObject;
+
+import com.alibaba.fastjson2.JSON;
+import com.alibaba.fastjson2.JSONArray;
+import com.alibaba.fastjson2.JSONObject;
 import com.gyjian.translate.service.TransApiService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,7 +38,7 @@ public class App implements CommandLineRunner {
             //return;
         }
         String inFile = args[0];
-        //String inFile = "C:\\Users\\MIKE\\Downloads\\Poker.Face.2023.S01E01.Dead.Mans.Hand.REPACK.1080p.STAN.WEB-DL.DDP5.1.H.264-NTb.srt";
+        //String inFile = "d:\\Downloads\\Poker.Face.2023.S01E01.Dead.Mans.Hand.REPACK.1080p.STAN.WEB-DL.DDP5.1.H.264-NTb.srt";
 
         log.info("input srt file:{}", inFile);
 

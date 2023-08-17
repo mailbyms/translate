@@ -1,56 +1,51 @@
 package com.gyjian.translate.service;
 
-import lombok.extern.slf4j.Slf4j;
-import org.apache.http.conn.ssl.NoopHostnameVerifier;
-import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
-import org.apache.http.conn.ssl.TrustStrategy;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClients;
+import org.apache.hc.client5.http.config.RequestConfig;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
+import org.apache.hc.client5.http.impl.classic.HttpClients;
+import org.apache.hc.core5.util.Timeout;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.client.ClientHttpRequestFactory;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.http.converter.StringHttpMessageConverter;
 import org.springframework.web.client.RestTemplate;
 
-import javax.net.ssl.SSLContext;
 import java.nio.charset.StandardCharsets;
-import java.security.KeyManagementException;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
-import java.security.cert.X509Certificate;
+import java.util.concurrent.TimeUnit;
 
 @Configuration
-@Slf4j
 public class RestTemplateConfig {
+
     @Bean
-    public RestTemplate restTemplate() throws KeyStoreException, NoSuchAlgorithmException, KeyManagementException {
-        // 加上这个配置
-        TrustStrategy acceptingTrustStrategy = (X509Certificate[] chain, String authType) -> true;
-
-        SSLContext sslContext = org.apache.http.ssl.SSLContexts.custom()
-                .loadTrustMaterial(null, acceptingTrustStrategy)
-                .build();
-        // 加上这个配置NoopHostnameVerifier.INSTANCE
-        SSLConnectionSocketFactory csf = new SSLConnectionSocketFactory(sslContext, NoopHostnameVerifier.INSTANCE);
-
-        CloseableHttpClient httpClient = HttpClients.custom()
-                .setSSLSocketFactory(csf)
-                .build();
-
-        HttpComponentsClientHttpRequestFactory requestFactory =
-                new HttpComponentsClientHttpRequestFactory();
-
-        requestFactory.setHttpClient(httpClient);
- //       requestFactory.setConnectionRequestTimeout(1000);
- //       requestFactory.setConnectTimeout(2000);
-//        requestFactory.setReadTimeout(4800);
-
-        RestTemplate restTemplate = new RestTemplate(requestFactory);
+    public RestTemplate restTemplate() {
+        RestTemplate restTemplate = new RestTemplate(clientHttpRequestFactory());
 
         //RestTemplate设置编码
-        restTemplate.getMessageConverters().set(1,new StringHttpMessageConverter(StandardCharsets.UTF_8));
+        restTemplate.getMessageConverters().set(1, new StringHttpMessageConverter(StandardCharsets.UTF_8));
         return restTemplate;
     }
 
+    private ClientHttpRequestFactory clientHttpRequestFactory() {
+        //  创建请求配置信息
+        RequestConfig  requestConfig = RequestConfig.custom()
+                // 设置连接超时时间
+                .setConnectTimeout(Timeout.of(5000, TimeUnit.MILLISECONDS))
+                // 设置响应超时时间
+                .setResponseTimeout(5000, TimeUnit.MILLISECONDS)
+                // 设置从连接池获取链接的超时时间
+                .setConnectionRequestTimeout(3000, TimeUnit.MILLISECONDS)
+                .build();
 
+        // 创建 CloseableHttpClient 对象
+        CloseableHttpClient httpClient = HttpClients.custom()
+                .setDefaultRequestConfig(requestConfig)
+                .build();
+
+        // 创建 factory
+        HttpComponentsClientHttpRequestFactory factory = new HttpComponentsClientHttpRequestFactory();
+        factory.setHttpClient(httpClient);
+
+        return factory;
+    }
 }

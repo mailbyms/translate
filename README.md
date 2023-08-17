@@ -10,10 +10,17 @@
 ```shell
 mvn package -DskipTests=true
 ```
-
 - 运行
+
 ```shell
 java -jar translate.jar xxx.srt
+```
 
+- 【可选】Spring Native 原生编译
+
+```shell
+# 会生成 translate 可执行文件
+mvn -DskipTests -Pnative native:compile
+./translate xxx.srt
 ```
 
