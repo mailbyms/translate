@@ -5,7 +5,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
-import java.io.UnsupportedEncodingException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -24,13 +23,13 @@ public class TransApiService {
         this.securityKey = securityKey;
     }
 
-    public String getTransResult(String query, String from, String to) throws UnsupportedEncodingException {
+    public String getTransResult(String query, String from, String to) {
         Map<String, String> params = buildParams(query, from, to);
 
         return restTemplate.getForObject(TRANS_API_HOST, String.class, params);
     }
 
-    private Map<String, String> buildParams(String query, String from, String to) throws UnsupportedEncodingException {
+    private Map<String, String> buildParams(String query, String from, String to) {
         Map<String, String> params = new HashMap<>();
         params.put("q", query);
         params.put("from", from);

@@ -1,8 +1,10 @@
 package com.gyjian.translate.service;
 
-import org.apache.hc.client5.http.config.RequestConfig;
+import org.apache.hc.client5.http.config.ConnectionConfig;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.client5.http.impl.classic.HttpClients;
+import org.apache.hc.client5.http.impl.io.PoolingHttpClientConnectionManager;
+import org.apache.hc.client5.http.impl.io.PoolingHttpClientConnectionManagerBuilder;
 import org.apache.hc.core5.util.Timeout;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -12,7 +14,6 @@ import org.springframework.http.converter.StringHttpMessageConverter;
 import org.springframework.web.client.RestTemplate;
 
 import java.nio.charset.StandardCharsets;
-import java.util.concurrent.TimeUnit;
 
 @Configuration
 public class RestTemplateConfig {
@@ -27,19 +28,16 @@ public class RestTemplateConfig {
     }
 
     private ClientHttpRequestFactory clientHttpRequestFactory() {
-        //  创建请求配置信息
-        RequestConfig  requestConfig = RequestConfig.custom()
-                // 设置连接超时时间
-                .setConnectTimeout(Timeout.of(5000, TimeUnit.MILLISECONDS))
-                // 设置响应超时时间
-                .setResponseTimeout(5000, TimeUnit.MILLISECONDS)
-                // 设置从连接池获取链接的超时时间
-                .setConnectionRequestTimeout(3000, TimeUnit.MILLISECONDS)
-                .build();
 
-        // 创建 CloseableHttpClient 对象
-        CloseableHttpClient httpClient = HttpClients.custom()
-                .setDefaultRequestConfig(requestConfig)
+        // Create a connection manager with custom configuration.
+        final PoolingHttpClientConnectionManager connManager = PoolingHttpClientConnectionManagerBuilder.create().build();
+        connManager.setDefaultConnectionConfig(ConnectionConfig.custom()
+                .setConnectTimeout(Timeout.ofSeconds(5)) // 与服务器建立连接的超时时间
+                .setSocketTimeout(Timeout.ofSeconds(5))  //建立连接之后，等待数据的最大时间
+                .build());
+
+        final CloseableHttpClient httpClient = HttpClients.custom()
+                .setConnectionManager(connManager)
                 .build();
 
         // 创建 factory
