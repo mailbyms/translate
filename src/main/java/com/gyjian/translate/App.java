@@ -122,9 +122,9 @@ public class App implements CommandLineRunner {
             e.printStackTrace();
             log.error("InterruptedException", e);
             Thread.currentThread().interrupt();
-        }catch (IOException e){
+        } catch (Exception e) {
             e.printStackTrace();
-            log.error("IOException", e);
+            log.error("Other Exception", e);
         }
 
         log.info("翻译完成");
