@@ -11,9 +11,9 @@
 mvn package -DskipTests=true
 ```
 - 运行
-
+需要在环境变量设定百度的开发者账号信息 APP_ID 和 SECURITY_KEY
 ```shell
-java -jar translate.jar xxx.srt
+APP_ID=2019_XXX_REPLACE_ME SECURITY_KEY=GHx_XXX_REPLACE_ME java -jar translate.jar xxx.srt
 ```
 
 - 【可选】Spring Native 原生编译

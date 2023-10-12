@@ -2,6 +2,7 @@ package com.gyjian.translate.service;
 
 import org.apache.commons.codec.digest.DigestUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
@@ -15,13 +16,11 @@ public class TransApiService {
     @Autowired
     RestTemplate restTemplate;
 
+    @Value("${baidu.appid}")
     private String appid;
-    private String securityKey;
 
-    public void init(String appid, String securityKey) {
-        this.appid = appid;
-        this.securityKey = securityKey;
-    }
+    @Value("${baidu.key}")
+    private String securityKey;
 
     public String getTransResult(String query, String from, String to) {
         Map<String, String> params = buildParams(query, from, to);

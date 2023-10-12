@@ -58,7 +58,6 @@ public class App implements CommandLineRunner {
 
             StringBuilder lyric = new StringBuilder();
             String str;
-            apiService.init(APP_ID, SECURITY_KEY);
             while ((str = reader.readLine()) != null) {
                 str = str.trim();
 
