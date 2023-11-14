@@ -1,50 +1,24 @@
 package com.gyjian.translate.service;
 
-import org.apache.commons.codec.digest.DigestUtils;
+import com.alibaba.fastjson2.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
-import java.util.HashMap;
-import java.util.Map;
-
 @Service
 public class TransApiService {
-    private static final String TRANS_API_HOST = "https://fanyi-api.baidu.com/api/trans/vip/translate?q={q}&from={from}&to={to}&appid={appid}&salt={salt}&sign={sign}";
+    private static final String TRANS_API_HOST = "http://192.168.2.69:1188/translate";
 
     @Autowired
     RestTemplate restTemplate;
 
-    @Value("${baidu.appid}")
-    private String appid;
-
-    @Value("${baidu.key}")
-    private String securityKey;
-
     public String getTransResult(String query, String from, String to) {
-        Map<String, String> params = buildParams(query, from, to);
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("text", query);
+        jsonObject.put("source_lang", "EN");
+        jsonObject.put("target_lang", "ZH");
 
-        return restTemplate.getForObject(TRANS_API_HOST, String.class, params);
-    }
-
-    private Map<String, String> buildParams(String query, String from, String to) {
-        Map<String, String> params = new HashMap<>();
-        params.put("q", query);
-        params.put("from", from);
-        params.put("to", to);
-
-        params.put("appid", appid);
-
-        // 随机数
-        String salt = String.valueOf(System.currentTimeMillis());
-        params.put("salt", salt);
-
-        // 签名
-        String src = appid + query + salt + securityKey; // 加密前的原文
-        params.put("sign", DigestUtils.md5Hex(src));
-
-        return params;
+        return restTemplate.postForObject(TRANS_API_HOST, jsonObject.toJSONString(), String.class);
     }
 
 }

@@ -2,7 +2,6 @@ package com.gyjian.translate;
 
 
 import com.alibaba.fastjson2.JSON;
-import com.alibaba.fastjson2.JSONArray;
 import com.alibaba.fastjson2.JSONObject;
 import com.gyjian.translate.service.TransApiService;
 import lombok.extern.slf4j.Slf4j;
@@ -45,7 +44,7 @@ public class App implements CommandLineRunner {
         int dotIndex = inFile.lastIndexOf('.'); // 获取最后一个点的位置
         String nameWithoutExt = inFile.substring(0, dotIndex); // 获取没有后缀的文件名
 
-        String outFile = nameWithoutExt + ".baidu.srt";
+        String outFile = nameWithoutExt + ".deeplx.srt";
         try (InputStream is = new FileInputStream(inFile);
              BufferedReader reader = new BufferedReader(new InputStreamReader(is));
              FileOutputStream fileOutputStream = new FileOutputStream(outFile);
@@ -77,20 +76,14 @@ public class App implements CommandLineRunner {
                         String query = apiService.getTransResult(lyric.toString(), "en", "zh");
 
                         JSONObject jo = JSON.parseObject(query);
-                        JSONArray jArray = jo.getJSONArray("trans_result");
-                        if (jArray == null) {
+                        Integer code = jo.getInteger("code");
+                        if (code == null || code != 200) {
                             log.warn("翻译失败，接口结果为：{}", query);
-                            int errno = jo.getIntValue("error_code");
-                            if (errno == 54003) {
-                                // 应该你 code
-                            }
                             continue;
                         }
 
-                        JSONObject jo2 = (JSONObject) jArray.get(0);
-
                         // Convert from Unicode to UTF-8
-                        String string = jo2.getString("dst");
+                        String string = jo.getString("data");
                         byte[] utf8 = string.getBytes(StandardCharsets.UTF_8);
                         // Convert from UTF-8 to Unicode
                         string = new String(utf8, StandardCharsets.UTF_8);
